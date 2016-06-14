@@ -62,7 +62,8 @@
             android:layout_height="wrap_content"
             android:text="Album"
             android:id="@+id/Album"
-            android:layout_weight="0.5" />
+            android:layout_weight="0.5"
+            android:onClick="OnClickAlbum" />
 
     </LinearLayout>
 

@@ -17,5 +17,4 @@ abstract public class  Game {
     abstract Bitmap Delete_Square(ArrayList<Rect> SquareInfo,int Square_number, Bitmap bitmap);
     abstract Boolean isRecentColor(int Colornumber);
     abstract void setRecentColor(int Colornumber);
-
 }

@@ -21,20 +21,19 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/Timer"
                 android:allowUndo="false"
-                android:textSize="45dp"
+                android:textSize="35dp"
                 android:layout_gravity="left|center_vertical"
                 android:layout_weight="0.3"
-                android:format="00:00"
                 android:textAlignment="center"
                 android:singleLine="true" />
 
             <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:text="0"
                 android:id="@+id/Score"
                 android:layout_weight="0.7"
-                android:textSize="45dp"
+                android:textSize="35dp"
                 android:textAlignment="center" />
 
         </LinearLayout>
@@ -84,7 +83,8 @@
                 android:text="||"
                 android:id="@+id/button2"
                 android:layout_weight="0.33"
-                android:textSize="30dp" />
+                android:textSize="30dp"
+                android:onClick="OnClickPause" />
 
             <Button
                 android:layout_width="wrap_content"

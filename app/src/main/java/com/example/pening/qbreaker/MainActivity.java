@@ -66,7 +66,10 @@ public class MainActivity extends AppCompatActivity {
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
-
+    public void OnClickAlbum(View v){
+        Intent intent = new Intent(this, AlbumActivity.class);
+        startActivity(intent);
+    }
     public void OnClickScan(View v) {
         integrator.initiateScan();
     }
@@ -111,7 +114,6 @@ public class MainActivity extends AppCompatActivity {
             bitmap.setPixel(center.get(i).x,center.get(i).y,Color.GREEN);
         }
 */
-
 
         scan.Make_Square(min_size, SquareInfo, center);
 
@@ -174,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
             }
             view.setImageBitmap(bitmap);
             view.invalidate();
+
             text.setText(result.getContents() + " [" + result.getFormatName() + "]" + " [" + result.getErrorCorrectionLevel() + "]" + "[" + result.getOrientation() + "]  pixel size ="  + min_size);
 
         } catch (WriterException e) {

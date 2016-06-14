@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Chronometer;
@@ -28,8 +29,7 @@ import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.ArrayList;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
+
 
 public class GameActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -56,12 +56,12 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     FrameLayout.LayoutParams params;
     Canvas tempCanvas;
     TextView score;
+    int set_score;
     int Square_number;
     int Color_number;
     boolean isClick;
     Bitmap tempbitmap;
-    Thread suffle_thread;
-    android.os.Handler s_handler;
+
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -82,8 +82,6 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         stopwatch = (Chronometer) findViewById(R.id.Timer);
         game_layout = (FrameLayout) findViewById(R.id.gamelayout);
         score = (TextView) findViewById(R.id.Score);
-
-        s_handler = new android.os.Handler();
 
         isClick = false;
         button = new ImageButton[3];
@@ -135,35 +133,18 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void OnClickStart(View v){
-        suffle_thread = new Thread("Suffle Thread"){
-          public void run(){
-              Square_number = game.Suffle(SquareInfo.size());
-              Color_number = game.Suffle(2);
-              Runnable callback = new Runnable() {
-                  @Override
-                  public void run() {
-                      Paint paint = new Paint();
-                      paint.setColor(COLOR_NUMBER[Color_number]);
-                      paint.setStyle(Paint.Style.FILL_AND_STROKE);
-                      tempCanvas.drawRect(SquareInfo.get(Square_number), paint);
-                      game.setRecentColor(Color_number);
-                      game_view.setImageBitmap(tempbitmap);
-                      game_view.invalidate();
 
-                  }
-              };
-              Message message =  Message.obtain(s_handler, callback);
-              s_handler.sendMessage(message);
-          }
-        };
+        this.Change_Color();
 
         stopwatch.start();
-        suffle_thread.start();
+
 
         Toast.makeText(getApplicationContext(), "Game Start", Toast.LENGTH_SHORT).show();
        // while(!(SquareInfo.size() == 0)){
-
-        }
+    }
+    public void OnClickPause(View v){
+        stopwatch.stop();
+    }
 
     @Override
     public void onStart() {
@@ -205,20 +186,62 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         client.disconnect();
     }
 
-
     @Override
     public void onClick(View v) {
+        Boolean combo = false;
+
         switch (v.getId()){
             case R.drawable.red:
-                Toast.makeText(getApplicationContext(), "RED", Toast.LENGTH_SHORT).show();
-                break;
-            case R.drawable.green:
-                Toast.makeText(getApplicationContext(), "GREEN", Toast.LENGTH_SHORT).show();
-                break;
-            case R.drawable.blue:
-                Toast.makeText(getApplicationContext(), "BLUE", Toast.LENGTH_SHORT).show();
+                if(game.isRecentColor(0)){
+                    combo = true;
+                }
+                else{
+                    combo = false;
+                    Toast.makeText(getApplicationContext(), "MISS", Toast.LENGTH_SHORT).show();
+                }
                 break;
 
+            case R.drawable.green:
+                if(game.isRecentColor(1)){
+                    combo = true;
+                }
+                else{
+                    combo = false;
+                    Toast.makeText(getApplicationContext(), "MISS", Toast.LENGTH_SHORT).show();
+                }
+                //Toast.makeText(getApplicationContext(), "GREEN", Toast.LENGTH_SHORT).show();
+                break;
+
+            case R.drawable.blue:
+                if(game.isRecentColor(2)){
+                    combo = true;
+                }
+                else{
+                    combo = false;
+                    Toast.makeText(getApplicationContext(), "MISS", Toast.LENGTH_SHORT).show();
+                }
+
+                //Toast.makeText(getApplicationContext(), "BLUE", Toast.LENGTH_SHORT).show();
+                break;
         }
+        tempbitmap = game.Delete_Square(SquareInfo,Square_number, tempbitmap);
+        Change_Color();
+        game_view.setImageBitmap(tempbitmap);
+        game_view.invalidate();
+        game.isCombo(combo);
+        set_score = game.Score();
+        score.setText("Score : " + set_score);
+    }
+    void Change_Color(){
+        Square_number =game.Suffle(SquareInfo.size());
+        Color_number = game.Suffle(3);
+
+        Paint paint = new Paint();
+        paint.setColor(COLOR_NUMBER[Color_number]);
+        paint.setStyle(Paint.Style.FILL_AND_STROKE);
+        tempCanvas.drawRect(SquareInfo.get(Square_number), paint);
+        game.setRecentColor(Color_number);
+        game_view.setImageBitmap(tempbitmap);
+        game_view.invalidate();
     }
 }

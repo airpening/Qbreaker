@@ -27,7 +27,7 @@ public class Break extends Game{
         combo = 0;
     }
     public int Suffle(int number) {
-        return (int)(Math.random() * number+1);
+        return (int)(Math.random() * number);
     }
     public int  Score(){
         return score = combo + score;
@@ -54,7 +54,6 @@ public class Break extends Game{
         Canvas canvas = new Canvas(bitmap);
 
         canvas.drawRect(SquareInfo.get(Square_number), paint);
-
         SquareInfo.remove(Square_number);
         return bitmap;
     }
@@ -69,4 +68,6 @@ public class Break extends Game{
     void setRecentColor(int Color_number) {
         recentColor = COLOR[Color_number];
     }
+
+
 }
