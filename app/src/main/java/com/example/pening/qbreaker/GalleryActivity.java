@@ -16,7 +16,7 @@ import java.net.URL;
 
 public class GalleryActivity extends AppCompatActivity {
     private ListView my_Listview;
-    private GalleryAdapter my_Adapter;
+    private GalleryCustomAdapter my_Adapter;
     String myJSON;
 
     private static final String TAG_RESULTS="result";
@@ -30,17 +30,13 @@ public class GalleryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
-
-        String id = new String();
-        id = "pening";
-
-        my_Adapter = new GalleryAdapter();
+        my_Adapter = new GalleryCustomAdapter();
 
         my_Listview = (ListView) findViewById(R.id.gallerylistview);
 
         my_Listview.setAdapter(my_Adapter);
 
-        getData("http://220.67.128.58/test.php");
+        getData("http://220.67.128.58/gallery_load.php");
 
     }
 

@@ -14,10 +14,10 @@ import java.util.ArrayList;
 /**
  * Created by pening on 2016-06-13.
  */
-public class CustomAdapter extends BaseAdapter {
+public class GalleryCustomAdapter extends BaseAdapter {
 
     private ArrayList<String> qr_list;
-    public CustomAdapter(){
+    public GalleryCustomAdapter(){
         qr_list = new ArrayList<String>();
     }
 
@@ -45,18 +45,14 @@ public class CustomAdapter extends BaseAdapter {
         if (convertView == null) {
             // view가 null일 경우 커스텀 레이아웃을 얻어 옴
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(R.layout.custom_listview, parent, false);
+            convertView = inflater.inflate(R.layout.gallery_listview, parent, false);
 
             // TextView에 현재 position의 문자열 추가
-            TextView text = (TextView) convertView.findViewById(R.id.content);
+            TextView text = (TextView) convertView.findViewById(R.id.contents);
             text.setText(qr_list.get(position));
 
             // 버튼을 터치 했을 때 이벤트 발생
-            Button challenge = (Button) convertView.findViewById(R.id.btn_test);
-            Button qr_upload = (Button) convertView.findViewById(R.id.upload);
-
-
-
+            Button challenge = (Button) convertView.findViewById(R.id.challenge);
         }
         return convertView;
     }

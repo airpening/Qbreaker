@@ -34,7 +34,9 @@
             android:layout_height="wrap_content"
             android:text="QR코드 내용"
             android:id="@+id/textView"
-            android:layout_gravity="center_horizontal" />
+            android:layout_gravity="center_horizontal"
+            android:onClick="OnClickText"
+            android:textSize="30dp" />
 
     </LinearLayout>
 
@@ -52,9 +54,18 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="Save"
+            android:id="@+id/insert_album"
+            android:layout_weight="0.33"
+            android:onClick="OnClickSave"
+            android:enabled="false" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="Scan"
             android:id="@+id/Scan"
-            android:layout_weight="0.5"
+            android:layout_weight="0.33"
             android:onClick="OnClickScan" />
 
         <Button
@@ -62,7 +73,7 @@
             android:layout_height="wrap_content"
             android:text="Album"
             android:id="@+id/Album"
-            android:layout_weight="0.5"
+            android:layout_weight="0.33"
             android:onClick="OnClickAlbum" />
 
     </LinearLayout>

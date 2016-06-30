@@ -18,12 +18,14 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
+import java.io.OutputStreamWriter;
 import java.net.URL;
-
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import com.example.pening.qbreaker.Data;
 public class AlbumActivity extends AppCompatActivity {
     private ListView my_Listview;
-    private CustomAdapter my_Adapter;
+    private AlbumCustomAdapter my_Adapter;
     String myJSON;
 
     private static final String TAG_RESULTS="result";
@@ -33,6 +35,7 @@ public class AlbumActivity extends AppCompatActivity {
     private static final String TAG_TIME = "TIME";
 
     JSONArray peoples = null;
+    private Data data;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -44,16 +47,15 @@ public class AlbumActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_album);
-        String id = new String();
-        id = "pening";
 
-        my_Adapter = new CustomAdapter();
+        my_Adapter = new AlbumCustomAdapter();
+        data = new Data();
 
         my_Listview = (ListView) findViewById(R.id.mylistview);
 
         my_Listview.setAdapter(my_Adapter);
 
-        getData("http://220.67.128.58/test.php");
+        getData("http://220.67.128.58/my_album_load.php",getIntent().getStringExtra("id"));
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -68,14 +70,15 @@ public class AlbumActivity extends AppCompatActivity {
             JSONObject jsonObj = new JSONObject(myJSON);
             peoples = jsonObj.getJSONArray(TAG_RESULTS);
 
-            for(int i=0;i<peoples.length();i++){
+            for(int i=0;i<=peoples.length();i++){
                 JSONObject c = peoples.getJSONObject(i);
+
                 String contents = c.getString(TAG_CONTENTS);
                 int square_count = c.getInt(TAG_SQUARE);
                 int score = c.getInt(TAG_SCORE);
                 int time = c.getInt(TAG_TIME);
-
-                my_Adapter.add(contents +"\n bit count = "+ square_count+ " score = " +score +" time = "+time);
+                data.setData(contents,square_count,score,time);
+                my_Adapter.add(data);
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -83,21 +86,29 @@ public class AlbumActivity extends AppCompatActivity {
 
     }
 
-    public void getData(String url){
+    public void getData(String url, String id){
         class GetDataJSON extends AsyncTask<String, Void, String>{
 
             @Override
             protected String doInBackground(String... params) {
 
-                String uri = params[0];
-
-                BufferedReader bufferedReader = null;
                 try {
-                    URL url = new URL(uri);
-                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                    StringBuilder sb = new StringBuilder();
+                    String uri = params[0];
+                    String id = (String)params[1];
+                    String data = URLEncoder.encode("Id", "UTF-8") + "=" + URLEncoder.encode(id, "UTF-8");
 
-                    bufferedReader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                    URL url = new URL(uri);
+                    URLConnection conn = url.openConnection();
+
+                    conn.setDoOutput(true);
+                    OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
+
+                    wr.write(data);
+                    wr.flush();
+
+                    StringBuilder sb = new StringBuilder();
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
 
                     String json;
                     while((json = bufferedReader.readLine())!= null){
@@ -118,7 +129,7 @@ public class AlbumActivity extends AppCompatActivity {
             }
         }
         GetDataJSON g = new GetDataJSON();
-        g.execute(url);
+        g.execute(url,id);
     }
 
     @Override

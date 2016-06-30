@@ -1,8 +1,9 @@
 package com.example.pening.qbreaker;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -11,12 +12,11 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
-import android.os.Message;
+import android.os.AsyncTask;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -27,7 +27,14 @@ import android.widget.Toast;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.plattysoft.leonids.ParticleSystem;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 
@@ -49,7 +56,9 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     Chronometer stopwatch;
     AlertDialog.Builder menu;
     ArrayList<Point> ButtonCenter;
+    ArrayList<Point> Center;
     ArrayList<Rect> SquareInfo;
+    ArrayList<Rect> tempSquare;
     int min_size;
     int button_size;
     FrameLayout game_layout;
@@ -61,6 +70,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     int Color_number;
     boolean isClick;
     Bitmap tempbitmap;
+    ParticleSystem particle;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -75,11 +85,17 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         arr = getIntent().getByteArrayExtra("image");
 
         ButtonCenter = getIntent().getParcelableArrayListExtra("Button");
+
         SquareInfo = getIntent().getParcelableArrayListExtra("Square");
+        tempSquare = SquareInfo;
+
+        Center = getIntent().getParcelableArrayListExtra("Center");
+
         min_size = getIntent().getIntExtra("min_size", 0);
         button_size = getIntent().getIntExtra("button_size", 0);
         game_view = (ImageView) findViewById(R.id.gameview);
         stopwatch = (Chronometer) findViewById(R.id.Timer);
+
         game_layout = (FrameLayout) findViewById(R.id.gamelayout);
         score = (TextView) findViewById(R.id.Score);
 
@@ -135,7 +151,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     public void OnClickStart(View v){
 
         this.Change_Color();
-
+        stopwatch.setBase(SystemClock.elapsedRealtime());
         stopwatch.start();
 
 
@@ -224,15 +240,63 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
                 //Toast.makeText(getApplicationContext(), "BLUE", Toast.LENGTH_SHORT).show();
                 break;
         }
+        /*
+        particle = new ParticleSystem(this, 40,R.drawable.star_pink,500);
+        particle.setScaleRange(0.7f, 0.7f);
+        particle.setSpeedRange(0.1f, 0.1f);
+        particle.setRotationSpeedRange(90, 180);
+        particle.setAcceleration(0.00013f, 90);
+        particle.setFadeOut(200, new AccelerateInterpolator());
+        int x = DPFromPixel(Center.get(Square_number).x);
+        int y = DPFromPixel(Center.get(Square_number).y);
+
+        particle.emit(x,y, 40,1000);
+        */
+
+
         tempbitmap = game.Delete_Square(SquareInfo,Square_number, tempbitmap);
+
         Change_Color();
-        game_view.setImageBitmap(tempbitmap);
-        game_view.invalidate();
+        //game_view.setImageBitmap(tempbitmap);
+        //game_view.invalidate();
         game.isCombo(combo);
         set_score = game.Score();
-        score.setText("Score : " + set_score);
+        score.setText(String.valueOf(set_score));
     }
     void Change_Color(){
+
+        if(SquareInfo.size() == 0){
+            AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+            alert.setTitle("Game Over");
+
+            alert.setPositiveButton("ReStart", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+
+                    score.setText(String.valueOf(0));
+                    tempbitmap = bitmap.copy(Bitmap.Config.ARGB_8888,true);
+                    tempCanvas = new Canvas(tempbitmap);
+                    SquareInfo = tempSquare;
+                    game_view.setImageBitmap(tempbitmap);
+                    game_view.invalidate();
+                    stopwatch.setBase(SystemClock.elapsedRealtime());
+                    stopwatch.stop();
+                }
+            });
+            alert.setNegativeButton("to Main", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+
+                    Intent intent = new Intent(GameActivity.this, MainActivity.class);
+
+                    intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                }
+            });
+
+            alert.show();
+
+            return;
+        }
         Square_number =game.Suffle(SquareInfo.size());
         Color_number = game.Suffle(3);
 
@@ -243,5 +307,72 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         game.setRecentColor(Color_number);
         game_view.setImageBitmap(tempbitmap);
         game_view.invalidate();
+    }
+    private void QR_InsertandUpdateDatabase(String id, String contents, int square_count, int score, int time){
+
+        class InsertData extends AsyncTask<String, Void, String> {
+            ProgressDialog loading;
+
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                loading = ProgressDialog.show(GameActivity.this, "Please Wait", null, true, true);
+            }
+
+            @Override
+            protected void onPostExecute(String s) {
+                super.onPostExecute(s);
+                loading.dismiss();
+                Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            protected String doInBackground(String... params) {
+
+                try{
+                    String id = (String)params[0];
+                    String contents = (String)params[1];
+                    String square_count = (String)params[2];
+                    String score = (String)params[3];
+                    String time = (String)params[4];
+
+                    String link="http://220.67.128.58/my_album_insert.php";
+                    String data  = URLEncoder.encode("Id", "UTF-8") + "=" + URLEncoder.encode(id, "UTF-8");
+                    data += "&" + URLEncoder.encode("CONTENTS", "UTF-8") + "=" + URLEncoder.encode(contents, "UTF-8");
+                    data += "&" + URLEncoder.encode("SQUARE_COUNT", "UTF-8") + "=" + URLEncoder.encode(square_count, "UTF-8");
+                    data += "&" + URLEncoder.encode("SCORE", "UTF-8") + "=" + URLEncoder.encode(score, "UTF-8");
+                    data += "&" + URLEncoder.encode("TIME", "UTF-8") + "=" + URLEncoder.encode(time, "UTF-8");
+                    URL url = new URL(link);
+                    URLConnection conn = url.openConnection();
+
+                    conn.setDoOutput(true);
+                    OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
+
+                    wr.write( data );
+                    wr.flush();
+
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
+                    StringBuilder sb = new StringBuilder();
+                    String line = null;
+
+                    // Read Server Response
+                    while((line = reader.readLine()) != null)
+                    {
+                        sb.append(line);
+                        break;
+                    }
+                    return sb.toString();
+                }
+                catch(Exception e){
+                    return new String("Exception: " + e.getMessage());
+                }
+
+            }
+        }
+
+        InsertData task = new InsertData();
+        task.execute(id, contents, String.valueOf(square_count), String.valueOf(score), String.valueOf(time));
     }
 }
